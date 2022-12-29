@@ -51,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -178,6 +179,31 @@ public class MySqlPluginTest {
                 return datasourceConfiguration;
         }
 
+        private static DatasourceConfiguration createDatasourceConfigurationWithEmptyPassword() {
+                DBAuth authDTO = new DBAuth();
+                authDTO.setAuthType(DBAuth.Type.USERNAME_PASSWORD);
+                authDTO.setUsername(username);
+                authDTO.setPassword("");
+                authDTO.setDatabaseName(database);
+
+                Endpoint endpoint = new Endpoint();
+                endpoint.setHost(address);
+                endpoint.setPort(port.longValue());
+
+                DatasourceConfiguration datasourceConfiguration = new DatasourceConfiguration();
+
+                /* set endpoint */
+                datasourceConfiguration.setAuthentication(authDTO);
+                datasourceConfiguration.setEndpoints(List.of(endpoint));
+
+                /* set ssl mode */
+                datasourceConfiguration.setConnection(new com.appsmith.external.models.Connection());
+                datasourceConfiguration.getConnection().setSsl(new SSLDetails());
+                datasourceConfiguration.getConnection().getSsl().setAuthType(SSLDetails.AuthType.DEFAULT);
+
+                return datasourceConfiguration;
+        }
+
         @Test
         public void testConnectMySQLContainer() {
 
@@ -186,6 +212,19 @@ public class MySqlPluginTest {
                 StepVerifier.create(dsConnectionMono)
                                 .assertNext(Assertions::assertNotNull)
                                 .verifyComplete();
+        }
+
+        @Test
+        public void testMySqlNoPasswordExceptionMessage() {
+
+                dsConfig = createDatasourceConfigurationWithEmptyPassword();
+
+                Mono<Connection> connectionMono = pluginExecutor.datasourceCreate(dsConfig);
+
+                StepVerifier
+                        .create(connectionMono)
+                        .expectErrorMessage("Access denied for user 'mysql'@'172.17.0.1' (using password: NO)")
+                        .verify();
         }
 
         @Test

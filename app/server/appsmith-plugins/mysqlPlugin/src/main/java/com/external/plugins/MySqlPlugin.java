@@ -24,7 +24,6 @@ import com.appsmith.external.plugins.BasePlugin;
 import com.appsmith.external.plugins.PluginExecutor;
 import com.appsmith.external.plugins.SmartSubstitutionInterface;
 import com.external.plugins.datatypes.MySQLSpecificDataTypes;
-import com.external.utils.MySqlErrorUtils;
 import com.external.utils.QueryUtils;
 import io.r2dbc.spi.ColumnMetadata;
 import io.r2dbc.spi.Connection;
@@ -136,8 +135,6 @@ public class MySqlPlugin extends BasePlugin {
             // "  and i.enforced = 'YES'\n" +  // Looks like this is not available on all versions of MySQL.
             "  and i.constraint_type in ('FOREIGN KEY', 'PRIMARY KEY')\n" +
             "order by i.table_name, i.constraint_name, k.position_in_unique_constraint;";
-
-    private static final MySqlErrorUtils mySqlErrorUtils = MySqlErrorUtils.getInstance();
 
     public MySqlPlugin(PluginWrapper wrapper) {
         super(wrapper);
