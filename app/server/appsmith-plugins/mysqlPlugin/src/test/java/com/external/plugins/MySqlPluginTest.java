@@ -221,9 +221,15 @@ public class MySqlPluginTest {
 
                 Mono<Connection> connectionMono = pluginExecutor.datasourceCreate(dsConfig);
 
+                String gateway = mySQLContainer.getContainerInfo().getNetworkSettings().getGateway();
+                String expectedErrorMessage = new StringBuilder("Access denied for user 'mysql'@'")
+                        .append(gateway)
+                        .append("' (using password: NO)")
+                        .toString();
+
                 StepVerifier
                         .create(connectionMono)
-                        .expectErrorMessage("Access denied for user 'mysql'@'172.17.0.1' (using password: NO)")
+                        .expectErrorMessage(expectedErrorMessage)
                         .verify();
         }
 
